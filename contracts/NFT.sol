@@ -27,12 +27,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
  *
  * _Deprecated in favor of https://wizard.openzeppelin.com/[Contracts Wizard]._
  */
-contract ERC721PresetMinterPauserAutoId is
-    Context,
-    Ownable,
-    ERC721Enumerable,
-    ERC721Pausable
-{
+contract NFT is Context, Ownable, ERC721Enumerable, ERC721Pausable {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.AddressSet;
 
