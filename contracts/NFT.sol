@@ -38,8 +38,6 @@ contract NFT is Context, Ownable, ERC721Enumerable, ERC721Pausable {
     /** @notice Capped max supply */
     uint256 public immutable supplyCap = 100;
 
-    Counters.Counter private _tokenIdTracker;
-
     string private _baseTokenURI;
 
     /**
@@ -70,34 +68,43 @@ contract NFT is Context, Ownable, ERC721Enumerable, ERC721Pausable {
      *
      * See {ERC721-_mint}.
      */
-    function mint(address to) public payable {
+    function mint(address _to, uint256 _id) public payable {
         require(!freeMint.contains(_msgSender()) || msg.value == costToMint);
         require(totalSupply() < supplyCap, "EXCEED CAP");
-        require(!paused(), "PAUSED");
+        require(!paused(), "MINT WHILE PAUSED");
 
         // We cannot just use balanceOf to create the new tokenId because tokens
         // can be burned (destroyed), so we need a separate counter.
-        _mint(to, _tokenIdTracker.current());
-        _tokenIdTracker.increment();
+        _mint(_to, _id);
     }
 
+    /** @notice Owner can burn token he owns */
     function burn(uint256 _id) external onlyOwner {
+        require(ownerOf(_id) == _msgSender());
         _burn(_id);
     }
 
-    /** @notice Pass an array of address to batch mint */
-    function batchMint(address[] calldata _recipients) external onlyOwner {
+    /** @notice Pass an array of address to batch mint
+     * @param _recipients List of addresses to receive the batch mint
+     * @param _ids Nested array of token IDs each address to receive
+     */
+    function batchMint(
+        address[] calldata _recipients,
+        uint256[][] calldata _ids
+    ) external onlyOwner {
         for (uint256 i = 0; i < _recipients.length; i++) {
-            _mint(_recipients[i], _tokenIdTracker.current());
-            _tokenIdTracker.increment();
+            for (uint256 j = 0; j < _ids[i].length; j++) {
+                _mint(_recipients[i], _ids[j][i]);
+            }
         }
     }
 
-    /** @notice Owner can batch mint to itself */
-    function batchMintForOwner(uint256 count) external onlyOwner {
-        for (uint256 i = 0; i < count; i++) {
-            _mint(_msgSender(), _tokenIdTracker.current());
-            _tokenIdTracker.increment();
+    /** @notice Owner can batch mint to itself
+     * @param _ids List of token IDs to match mint to owner
+     */
+    function batchMintForOwner(uint256[] calldata _ids) external onlyOwner {
+        for (uint256 i = 0; i < _ids.length; i++) {
+            _mint(_msgSender(), _ids[i]);
         }
     }
 
