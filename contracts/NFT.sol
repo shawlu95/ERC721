@@ -33,12 +33,13 @@ contract P_NFTs is Context, Ownable, ERC721Enumerable, ERC721Pausable {
     mapping(address => uint256) public alreadyMinted;
 
     modifier mintOpen() {
-        require(isOpen, "Public mint not open");
+        require(isOpen, "Public mint not open.");
         _;
     }
 
+    //Functions related to minting or changing NFT metadata are inaccessible after freezing
     modifier nonFrozen() {
-        require(!isFrozen, "Metadata frozen.");
+        require(!isFrozen, "NFT metadata is frozen.");
         _;
     }
 
@@ -88,7 +89,7 @@ contract P_NFTs is Context, Ownable, ERC721Enumerable, ERC721Pausable {
         _tokenIds.increment();
     }
 
-    /** @notice Owner can burn token he owns */
+    /** @notice Contract owner can burn token he owns */
     function burn(uint256 _id) external onlyOwner {
         require(ownerOf(_id) == _msgSender());
         _burn(_id);
@@ -138,6 +139,23 @@ contract P_NFTs is Context, Ownable, ERC721Enumerable, ERC721Pausable {
     function unpause() external onlyOwner {
         _unpause();
     }
+
+    //Prevent most token functions being called thereby freezing metadata
+    function freeze() external onlyOwner {
+        isFrozen = true;
+    }
+
+    function isMintActive() external view returns (bool) {
+    return isOpen;
+  }
+
+  function userMintCount(address account) external view returns (uint256) {
+    return alreadyMinted[account];
+  }
+
+  function totalMintCount() external view returns (uint256) {
+    return _tokenIds.current();
+  }
 
     function _beforeTokenTransfer(
         address from,
