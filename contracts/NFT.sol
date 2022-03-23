@@ -146,16 +146,16 @@ contract P_NFTs is Context, Ownable, ERC721Enumerable, ERC721Pausable {
     }
 
     function isMintActive() external view returns (bool) {
-    return isOpen;
-  }
+        return isOpen;
+    }
 
-  function userMintCount(address account) external view returns (uint256) {
-    return alreadyMinted[account];
-  }
+    function userMintCount(address account) external view returns (uint256) {
+        return alreadyMinted[account];
+    }
 
-  function totalMintCount() external view returns (uint256) {
-    return _tokenIds.current();
-  }
+    function totalMintCount() external view returns (uint256) {
+        return _tokenIds.current();
+    }
 
     function _beforeTokenTransfer(
         address from,
