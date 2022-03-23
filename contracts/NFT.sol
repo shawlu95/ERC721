@@ -17,6 +17,9 @@ contract P_NFTs is Context, Ownable, ERC721Enumerable, ERC721Pausable {
     /** @notice Capped max supply */
     uint256 public immutable supplyCap = 10;
 
+    /** @notice Each address has a mint quota */
+    uint16 public immutable quota = 2;
+
     string private _baseTokenURI;
 
     //Token ID counter declared
@@ -30,7 +33,7 @@ contract P_NFTs is Context, Ownable, ERC721Enumerable, ERC721Pausable {
     bool public isOpen;
 
     //Mapping to track number of mints per address
-    mapping(address => uint256) public alreadyMinted;
+    mapping(address => uint256) public userMintCount;
 
     modifier mintOpen() {
         require(isOpen, "Public mint not open.");
@@ -79,11 +82,11 @@ contract P_NFTs is Context, Ownable, ERC721Enumerable, ERC721Pausable {
      */
     function mintPNFT() public mintOpen {
         //require(msg.sender == tx.origin, "no bots");
-        require(alreadyMinted[msg.sender] < 2, "too many"); // limit per-address mints to 2
+        require(userMintCount[msg.sender] < quota, "Exceed quota");
 
-        require(totalSupply() < supplyCap, "EXCEED CAP");
-        require(!paused(), "MINT WHILE PAUSED");
-        alreadyMinted[msg.sender]++;
+        require(totalSupply() < supplyCap, "Exceed cap");
+        require(!paused(), "Paused");
+        userMintCount[msg.sender]++;
 
         _mint(_msgSender(), _tokenIds.current() + 1);
         _tokenIds.increment();
@@ -105,7 +108,7 @@ contract P_NFTs is Context, Ownable, ERC721Enumerable, ERC721Pausable {
     {
         require(
             totalSupply() + _recipients.length - 1 < supplyCap,
-            "EXCEED CAP"
+            "Exceed cap"
         );
 
         for (uint256 i = 0; i < _recipients.length; i++) {
@@ -115,12 +118,12 @@ contract P_NFTs is Context, Ownable, ERC721Enumerable, ERC721Pausable {
     }
 
     /** @notice Owner can batch mint to itself
-     *
+     * @param _amount Number of tokens to be minted
      */
-    function batchMintForOwner(uint256 _Amount) external onlyOwner nonFrozen {
-        require(totalSupply() + _Amount - 1 < supplyCap, "EXCEED CAP");
+    function batchMintForOwner(uint256 _amount) external onlyOwner nonFrozen {
+        require(totalSupply() + _amount - 1 < supplyCap, "Exceed cap");
 
-        for (uint256 i = 0; i < _Amount; i++) {
+        for (uint256 i = 0; i < _amount; i++) {
             _mint(_msgSender(), _tokenIds.current() + 1);
             _tokenIds.increment();
         }
@@ -147,10 +150,6 @@ contract P_NFTs is Context, Ownable, ERC721Enumerable, ERC721Pausable {
 
     function isMintActive() external view returns (bool) {
         return isOpen;
-    }
-
-    function userMintCount(address account) external view returns (uint256) {
-        return alreadyMinted[account];
     }
 
     function totalMintCount() external view returns (uint256) {
