@@ -33,12 +33,12 @@ contract P_NFTs is Context, Ownable, ERC721Enumerable, ERC721Pausable {
     mapping(address => uint256) public alreadyMinted;
 
     modifier mintOpen() {
-        require(isOpen, "Public mint not open.");
+        require(isOpen, "Public mint not open");
         _;
     }
 
     modifier nonFrozen() {
-        require(!isFrozen, "NFT metadata is frozen.");
+        require(!isFrozen, "Metadata frozen.");
         _;
     }
 

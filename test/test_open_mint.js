@@ -26,4 +26,34 @@ describe('Test Mint', function () {
     expect(await contract.isOpen()).to.equal(false);
   });
 
+  it('Cannot mint while closed', async function () {
+    await expect(contract.connect(user1).mintPNFT())
+      .to.be.revertedWith(Error.NOT_OPEN);
+  });
+
+  it('Can mint while open', async function () {
+    await contract.connect(owner).openMint();
+    expect(await contract.isOpen()).to.equal(true);
+
+    await contract.connect(user1).mintPNFT();
+    expect(await contract.totalSupply()).to.equal(1);
+    expect(await contract.ownerOf(1)).to.equal(user1.address);
+  });
+
+  it('Owner can close mint', async function () {
+    await contract.connect(owner).openMint();
+    expect(await contract.isOpen()).to.equal(true);
+
+    await contract.connect(owner).closeMint();
+    expect(await contract.isOpen()).to.equal(false);
+  });
+
+  it('Non-owner cannot close mint', async function () {
+    await contract.connect(owner).openMint();
+    expect(await contract.isOpen()).to.equal(true);
+
+    await expect(contract.connect(user1).closeMint())
+      .to.be.revertedWith(Error.NOT_OWNER);
+    expect(await contract.isOpen()).to.equal(true);
+  });
 });

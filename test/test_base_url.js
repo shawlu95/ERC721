@@ -3,7 +3,7 @@ const { ethers, waffle, upgrades } = require('hardhat');
 const { parseEther } = require('ethers/lib/utils');
 const Error = require('./error');
 
-describe.only('Test Mint', function () {
+describe('Test Mint', function () {
 
   let contract;
   let owner, user1, user2;
