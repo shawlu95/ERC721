@@ -3,7 +3,7 @@ const { ethers, waffle, upgrades } = require('hardhat');
 const { parseEther } = require('ethers/lib/utils');
 const Error = require('./error');
 
-describe('Test Quota', function () {
+describe('Test Pause', function () {
 
   let contract;
   let owner, user1, user2;
